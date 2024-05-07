@@ -1,0 +1,133 @@
+﻿@page "/Contact"
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+<PageTitle>Contact</PageTitle>
+
+@code {
+    List<BlazorApp1.Models.Contact> items;
+    /*this an enum that will select the cloumn that wil sort the data in the dable*/
+    public enum SortOption
+    {
+        ID,
+        FirstName,
+        LastName,
+        Email,
+        PhoneNumber
+    }
+    /*Default sorting optiojn which is SortOption.ID */
+    public SortOption CurrentSortOption { get; set; } = SortOption.ID;
+    /*the value of sorting will it be asc or desc */
+    public bool IsSortDescending { get; set; } = false;
+    public string Filter { get; set; }
+    /*IsVisible method will check based on Filter string input if the given valee start with the given filter string */
+    public bool IsVisible(BlazorApp1.Models.Contact contact)
+    {
+        if (string.IsNullOrEmpty(Filter))
+            return true;
+
+        if (contact.FirstName.Contains(Filter, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        if (contact.Email.ToString().StartsWith(Filter) || contact.LastName.ToString().StartsWith(Filter) || contact.PhoneNumber.ToString().StartsWith(Filter))
+            return true;
+
+        return false;
+    }
+    /*when the Contact Page is rendered it will execute OnInitialized method and get the Contact list item from Contact Service  */
+    protected override void OnInitialized()
+    {
+        items = ContactService.GetItems();
+    }
+    /*this method will go to the delete page with the id of the contact item*/
+    void NavigateToDeletePage(int ContactId)
+    {
+        NavigationManager.NavigateTo($"/delete/{ContactId}");
+    }
+    /*this method will go to the edit page with the id of the contact item*/
+
+    private void EditContact(BlazorApp1.Models.Contact contact)
+    {
+        NavigationManager.NavigateTo($"/edit/{contact.Id}");
+    }
+    /*this method will SortContact based on the clicked column */
+    private void SortContacts(SortOption sortOption)
+    {
+        IsSortDescending = !IsSortDescending;
+       CurrentSortOption = sortOption;
+
+        switch (sortOption)
+        {
+            case SortOption.ID:
+                items = IsSortDescending ? items.OrderByDescending(c => c.Id).ToList() : items.OrderBy(c => c.Id).ToList();
+                break;
+            case SortOption.FirstName:
+                items = IsSortDescending ? items.OrderByDescending(c => c.FirstName).ToList() : items.OrderBy(c => c.FirstName).ToList();
+                break;
+            case SortOption.LastName:
+                items = IsSortDescending ? items.OrderByDescending(c => c.LastName).ToList() : items.OrderBy(c => c.LastName).ToList();
+                break;
+            case SortOption.Email:
+                items = IsSortDescending ? items.OrderByDescending(c => c.Email).ToList() : items.OrderBy(c => c.Email).ToList();
+                break;
+            case SortOption.PhoneNumber:
+                items = IsSortDescending ? items.OrderByDescending(c => c.PhoneNumber).ToList() : items.OrderBy(c => c.PhoneNumber).ToList();
+                break;
+        }
+    }
+}
+<h3>Contact List</h3>
+<div class="d-flex justify-content-end">
+    <button class="btn btn-primary mb-3">
+        <NavLink style="color:#000;" class="nav-link " href="Create">
+            <span >Create</span>
+        </NavLink>
+        </button>
+</div>
+
+<input class="form-control mb-3" type="text" placeholder="Filter..."
+       @bind="Filter"
+       @bind:event="oninput">
+@if (items != null && items.Any())
+{
+    <table id="example"  class="table">
+        <thead>
+            <tr>
+                <th style="cursor:pointer;" @onclick="() => SortContacts(SortOption.ID)">ID</th>
+                <th style="cursor:pointer;" @onclick="() => SortContacts(SortOption.FirstName)">First Name</th>
+                <th style="cursor:pointer;" @onclick="() => SortContacts(SortOption.LastName)">Last Name</th>
+                <th style="cursor:pointer;" @onclick="() => SortContacts(SortOption.Email)">Email</th>
+                <th style="cursor:pointer;" @onclick="() => SortContacts(SortOption.PhoneNumber)">Phone</th>
+                <th>Action</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in items)
+            {
+                if (!IsVisible(contact))
+                    continue;
+                <tr>
+                    <td>@contact.Id</td>
+                    <td>
+                        <NavLink style="color:#000;" class="nav-link " href=@string.Format("{0}{1}","/details/",@contact.Id)>
+                            @contact.FirstName
+                        </NavLink>
+                      </td>
+                    <td>@contact.LastName</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.PhoneNumber</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditContact(contact)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => NavigateToDeletePage(contact.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No contacts found.</p>
+}
+

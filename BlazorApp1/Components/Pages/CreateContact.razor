@@ -1,0 +1,57 @@
+﻿@page "/create"
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+<PageTitle>Create Contact</PageTitle>
+
+@using BlazorApp1.Models
+@rendermode InteractiveServer
+<h3>Create Contact</h3>
+@code {
+    BlazorApp1.Models.Contact contact = new BlazorApp1.Models.Contact();
+    bool showErrors = false;
+
+    /*Client side Validation will be implmented by data antiotaion and server side will be implmented by EditContext if the feilds are valid it will create A contact and navigate to contact page  */
+    async Task HandleValidSubmit(EditContext editContext)
+    {
+        if (editContext.Validate()) // Use Validate method on EditContext
+        {
+            ContactService.CreateContact(contact);
+            NavigationManager.NavigateTo("/contact");
+        }
+        else
+        {
+            // Invalid fields
+            var invalidFields = editContext.GetValidationMessages();
+            // Inspect invalidFields to identify which fields are marked as invalid
+            showErrors = true;
+        }
+    }
+}
+
+<EditForm Model="@contact" OnValidSubmit="@HandleValidSubmit" FormName="CreateForm">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label for="FirstName">FirstName</label>
+        <InputText id="FirstName" class="form-control" @bind-Value="contact.FirstName" />
+        <ValidationMessage For="@(() => contact.FirstName)" />
+    </div>
+    <div class="form-group mb-3">
+        <label for="LastName">LastName</label>
+        <InputText id="LastName" class="form-control" @bind-Value="contact.LastName" />
+        <ValidationMessage For="@(() => contact.LastName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Email">Email</label>
+        <InputText id="Email" class="form-control" @bind-Value="contact.Email" />
+        <ValidationMessage For="@(() => contact.Email)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="PhoneNumber">Phone number</label>
+        <InputText id="PhoneNumber" class="form-control" @bind-Value="contact.PhoneNumber" />
+        <ValidationMessage For="@(() => contact.PhoneNumber)" />
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+</EditForm>

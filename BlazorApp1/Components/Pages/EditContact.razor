@@ -1,0 +1,67 @@
+﻿@page "/edit/{id}"
+@using BlazorApp1.Models
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+<PageTitle>Edit Contact</PageTitle>
+<h3>Edit Contact</h3>
+
+<EditForm Model="@contact" OnValidSubmit="@UpdateContact">
+    <DataAnnotationsValidator />
+    <div class="form-group mb-3">
+        <label for="firstName">First Name:</label>
+        <InputText id="firstName" class="form-control" @bind-Value="contact.FirstName" />
+        <ValidationMessage For="@(() => contact.FirstName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="lastName">Last Name:</label>
+        <InputText id="lastName" class="form-control" @bind-Value="contact.LastName" />
+        <ValidationMessage For="@(() => contact.LastName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="email">Email:</label>
+        <InputText id="email" class="form-control" @bind-Value="contact.Email" />
+        <ValidationMessage For="@(() => contact.Email)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="phoneNumber">Phone Number:</label>
+        <InputText id="phoneNumber" class="form-control" @bind-Value="contact.PhoneNumber" />
+        <ValidationMessage For="@(() => contact.PhoneNumber)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    bool showErrors = false;
+
+    private BlazorApp1.Models.Contact contact;
+
+    protected async override void OnInitialized()
+    {
+        int.TryParse(Id, out int id);
+        contact =await ContactService.GetContactByIdAsync(id);
+    }
+
+    private void UpdateContact(EditContext editContext)
+    {
+        if (editContext.Validate()) // Use Validate method on EditContext
+        {
+            ContactService.UpdateContact(contact);
+            NavigationManager.NavigateTo("/contact");
+        }
+        else
+        {
+            // Invalid fields
+            var invalidFields = editContext.GetValidationMessages();
+            // Inspect invalidFields to identify which fields are marked as invalid
+            showErrors = true;
+        }
+        
+    }
+}

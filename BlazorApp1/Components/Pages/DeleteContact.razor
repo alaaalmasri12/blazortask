@@ -1,0 +1,38 @@
+﻿@page "/delete/{id}"
+@using BlazorApp1.Models
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+<PageTitle>Delete Contact</PageTitle>
+
+<h3>Delete Contact</h3>
+
+<div>
+    <p>Are you sure you want to delete this contact?</p>
+    <button class="btn btn-danger" @onclick="Delete">Yes</button>
+    <button class="btn btn-primary" @onclick="Cancel">No</button>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private BlazorApp1.Models.Contact contact;
+
+    protected async override void OnInitialized()
+    {
+        int.TryParse(Id, out int id);
+        contact = await ContactService.GetContactByIdAsync(id);
+    }
+
+    private void Delete()
+    {
+        ContactService.DeleteContact(contact.Id);
+        NavigationManager.NavigateTo("/contact");
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/contact");
+    }
+}
